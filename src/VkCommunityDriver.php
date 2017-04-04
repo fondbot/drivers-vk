@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace FondBot\Drivers\VkCommunity;
 
 use GuzzleHttp\Client;
-use FondBot\Contracts\Channels\User;
-use FondBot\Contracts\Channels\Driver;
+use FondBot\Drivers\Driver;
+use FondBot\Contracts\Drivers\User;
 use FondBot\Contracts\Conversation\Keyboard;
-use FondBot\Contracts\Channels\OutgoingMessage;
-use FondBot\Contracts\Channels\ReceivedMessage;
-use FondBot\Channels\Exceptions\InvalidChannelRequest;
-use FondBot\Contracts\Channels\Extensions\WebhookVerification;
+use FondBot\Contracts\Drivers\InvalidRequest;
+use FondBot\Contracts\Drivers\OutgoingMessage;
+use FondBot\Contracts\Drivers\ReceivedMessage;
+use FondBot\Contracts\Drivers\Extensions\WebhookVerification;
 
 class VkCommunityDriver extends Driver implements WebhookVerification
 {
@@ -44,7 +44,7 @@ class VkCommunityDriver extends Driver implements WebhookVerification
     /**
      * Verify incoming request data.
      *
-     * @throws InvalidChannelRequest
+     * @throws InvalidRequest
      */
     public function verifyRequest(): void
     {
@@ -52,19 +52,19 @@ class VkCommunityDriver extends Driver implements WebhookVerification
         $object = $this->getRequest('object');
 
         if ($type === null || $type !== 'message_new') {
-            throw new InvalidChannelRequest('Invalid type');
+            throw new InvalidRequest('Invalid type');
         }
 
         if ($object === null) {
-            throw new InvalidChannelRequest('Invalid object');
+            throw new InvalidRequest('Invalid object');
         }
 
         if (!isset($object['user_id'])) {
-            throw new InvalidChannelRequest('Invalid user_id');
+            throw new InvalidRequest('Invalid user_id');
         }
 
         if (!isset($object['body'])) {
-            throw new InvalidChannelRequest('Invalid body');
+            throw new InvalidRequest('Invalid body');
         }
     }
 
@@ -72,7 +72,7 @@ class VkCommunityDriver extends Driver implements WebhookVerification
      * Get message sender.
      *
      * @return User
-     * @throws \FondBot\Channels\Exceptions\InvalidChannelRequest
+     * @throws InvalidRequest
      */
     public function getUser(): User
     {

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace FondBot\Drivers\VkCommunity;
 
-use FondBot\Contracts\Channels\User;
+use FondBot\Contracts\Drivers\User;
 use FondBot\Contracts\Conversation\Keyboard;
-use FondBot\Contracts\Channels\OutgoingMessage;
+use FondBot\Contracts\Drivers\OutgoingMessage;
 
 class VkCommunityOutgoingMessage implements OutgoingMessage
 {

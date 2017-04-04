@@ -8,7 +8,7 @@ use Tests\TestCase;
 use GuzzleHttp\Client;
 use FondBot\Helpers\Str;
 use GuzzleHttp\Psr7\Response;
-use FondBot\Contracts\Channels\User;
+use FondBot\Contracts\Drivers\User;
 use FondBot\Drivers\VkCommunity\VkCommunityUser;
 use FondBot\Drivers\VkCommunity\VkCommunityDriver;
 use FondBot\Drivers\VkCommunity\VkCommunityOutgoingMessage;
@@ -41,7 +41,7 @@ class VkCommunityDriverTest extends TestCase
     }
 
     /**
-     * @expectedException \FondBot\Channels\Exceptions\InvalidChannelRequest
+     * @expectedException \FondBot\Contracts\Drivers\InvalidRequest
      * @expectedExceptionMessage Invalid type
      */
     public function test_verifyRequest_error_type()
@@ -52,7 +52,7 @@ class VkCommunityDriverTest extends TestCase
     }
 
     /**
-     * @expectedException \FondBot\Channels\Exceptions\InvalidChannelRequest
+     * @expectedException \FondBot\Contracts\Drivers\InvalidRequest
      * @expectedExceptionMessage Invalid object
      */
     public function test_verifyRequest_empty_object()
@@ -63,7 +63,7 @@ class VkCommunityDriverTest extends TestCase
     }
 
     /**
-     * @expectedException \FondBot\Channels\Exceptions\InvalidChannelRequest
+     * @expectedException \FondBot\Contracts\Drivers\InvalidRequest
      * @expectedExceptionMessage Invalid user_id
      */
     public function test_verifyRequest_empty_object_user_id()
@@ -75,7 +75,7 @@ class VkCommunityDriverTest extends TestCase
     }
 
     /**
-     * @expectedException \FondBot\Channels\Exceptions\InvalidChannelRequest
+     * @expectedException \FondBot\Contracts\Drivers\InvalidRequest
      * @expectedExceptionMessage Invalid body
      */
     public function test_verifyRequest_empty_object_body()
