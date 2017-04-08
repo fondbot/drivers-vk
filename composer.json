@@ -1,5 +1,5 @@
 {
-  "name": "fondbot/vk-communities-driver",
+  "name": "fondbot/vk-communities",
   "description": "VK Communities driver for FondBot",
   "type": "library",
   "license": "MIT",
