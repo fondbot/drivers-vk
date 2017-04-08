@@ -7,11 +7,9 @@ namespace Tests\Unit;
 use Tests\TestCase;
 use GuzzleHttp\Client;
 use FondBot\Helpers\Str;
+use FondBot\Drivers\User;
 use GuzzleHttp\Psr7\Response;
-use FondBot\Contracts\Drivers\User;
-use FondBot\Drivers\VkCommunity\VkCommunityUser;
 use FondBot\Drivers\VkCommunity\VkCommunityDriver;
-use FondBot\Drivers\VkCommunity\VkCommunityOutgoingMessage;
 use FondBot\Drivers\VkCommunity\VkCommunityReceivedMessage;
 
 /**
@@ -41,7 +39,7 @@ class VkCommunityDriverTest extends TestCase
     }
 
     /**
-     * @expectedException \FondBot\Contracts\Drivers\InvalidRequest
+     * @expectedException \FondBot\Drivers\Exceptions\InvalidRequest
      * @expectedExceptionMessage Invalid type
      */
     public function test_verifyRequest_error_type()
@@ -52,7 +50,7 @@ class VkCommunityDriverTest extends TestCase
     }
 
     /**
-     * @expectedException \FondBot\Contracts\Drivers\InvalidRequest
+     * @expectedException \FondBot\Drivers\Exceptions\InvalidRequest
      * @expectedExceptionMessage Invalid object
      */
     public function test_verifyRequest_empty_object()
@@ -63,7 +61,7 @@ class VkCommunityDriverTest extends TestCase
     }
 
     /**
-     * @expectedException \FondBot\Contracts\Drivers\InvalidRequest
+     * @expectedException \FondBot\Drivers\Exceptions\InvalidRequest
      * @expectedExceptionMessage Invalid user_id
      */
     public function test_verifyRequest_empty_object_user_id()
@@ -75,12 +73,13 @@ class VkCommunityDriverTest extends TestCase
     }
 
     /**
-     * @expectedException \FondBot\Contracts\Drivers\InvalidRequest
+     * @expectedException \FondBot\Drivers\Exceptions\InvalidRequest
      * @expectedExceptionMessage Invalid body
      */
     public function test_verifyRequest_empty_object_body()
     {
-        $this->vkCommunity->fill($this->parameters, ['type' => 'message_new', 'object' => ['user_id' => Str::random()]]);
+        $this->vkCommunity->fill($this->parameters,
+            ['type' => 'message_new', 'object' => ['user_id' => Str::random()]]);
 
         $this->vkCommunity->verifyRequest();
     }
@@ -137,7 +136,6 @@ class VkCommunityDriverTest extends TestCase
         $result = $this->vkCommunity->getUser();
 
         $this->assertInstanceOf(User::class, $result);
-        $this->assertInstanceOf(VkCommunityUser::class, $result);
         $this->assertEquals($senderId, $result->getId());
         $this->assertEquals($senderFirstName.' '.$senderLastName, $result->getName());
         $this->assertNull($result->getUsername());
@@ -149,34 +147,6 @@ class VkCommunityDriverTest extends TestCase
         $this->assertEquals($senderId, $result->getId());
         $this->assertEquals($senderFirstName.' '.$senderLastName, $result->getName());
         $this->assertNull($result->getUsername());
-    }
-
-    public function test_sendMessage()
-    {
-        $recipient = $this->mock(User::class);
-        $recipient->shouldReceive('getId')->andReturn($recipientId = $this->faker()->uuid)->atLeast()->once();
-        $text = $this->faker()->text();
-
-        $this->guzzle->shouldReceive('get')
-            ->with(
-                VkCommunityDriver::API_URL.'messages.send',
-                [
-                    'query' => [
-                        'message' => $text,
-                        'user_id' => $recipientId,
-                        'access_token' => $this->parameters['access_token'],
-                        'v' => VkCommunityDriver::API_VERSION,
-                    ],
-                ]
-            )
-            ->once();
-
-        $result = $this->vkCommunity->sendMessage($recipient, $text);
-
-        $this->assertInstanceOf(VkCommunityOutgoingMessage::class, $result);
-        $this->assertSame($recipient, $result->getRecipient());
-        $this->assertSame($text, $result->getText());
-        $this->assertNull($result->getKeyboard());
     }
 
     public function test_getMessage()

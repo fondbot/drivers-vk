@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace FondBot\Drivers\VkCommunity;
 
 use GuzzleHttp\Client;
+use FondBot\Drivers\User;
 use FondBot\Drivers\Driver;
-use FondBot\Contracts\Drivers\User;
-use FondBot\Contracts\Conversation\Keyboard;
-use FondBot\Contracts\Drivers\InvalidRequest;
-use FondBot\Contracts\Drivers\OutgoingMessage;
-use FondBot\Contracts\Drivers\ReceivedMessage;
-use FondBot\Contracts\Drivers\Extensions\WebhookVerification;
+use FondBot\Drivers\Command;
+use FondBot\Drivers\ReceivedMessage;
+use FondBot\Drivers\Commands\SendMessage;
+use FondBot\Drivers\Exceptions\InvalidRequest;
+use FondBot\Drivers\Extensions\WebhookVerification;
 
 class VkCommunityDriver extends Driver implements WebhookVerification
 {
@@ -39,6 +39,26 @@ class VkCommunityDriver extends Driver implements WebhookVerification
             'access_token',
             'confirmation_token',
         ];
+    }
+
+    /**
+     * Whether current request type is verification.
+     *
+     * @return bool
+     */
+    public function isVerificationRequest(): bool
+    {
+        return $this->getRequest('type') === 'confirmation';
+    }
+
+    /**
+     * Run webhook verification and respond if required.
+     *
+     * @return mixed
+     */
+    public function verifyWebhook()
+    {
+        return $this->getParameter('confirmation_token');
     }
 
     /**
@@ -88,8 +108,12 @@ class VkCommunityDriver extends Driver implements WebhookVerification
             ],
         ]);
         $response = json_decode($request->getBody()->getContents(), true);
+        $user = $response['response'][0];
 
-        return $this->sender = new VkCommunityUser($response['response'][0]);
+        return $this->sender = new User(
+            (string) $user['id'],
+            $user['first_name'].' '.$user['last_name']
+        );
     }
 
     /**
@@ -103,17 +127,25 @@ class VkCommunityDriver extends Driver implements WebhookVerification
     }
 
     /**
+     * Handle command.
+     *
+     * @param Command $command
+     */
+    public function handle(Command $command): void
+    {
+        if ($command instanceof SendMessage) {
+            $this->handleSendMessageCommand($command);
+        }
+    }
+
+    /**
      * Send reply to participant.
      *
-     * @param User          $sender
-     * @param string        $text
-     * @param Keyboard|null $keyboard
-     *
-     * @return OutgoingMessage
+     * @param SendMessage $command
      */
-    public function sendMessage(User $sender, string $text, Keyboard $keyboard = null): OutgoingMessage
+    protected function handleSendMessageCommand(SendMessage $command): void
     {
-        $message = new VkCommunityOutgoingMessage($sender, $text, $keyboard);
+        $message = new VkCommunityOutgoingMessage($command->recipient, $command->text, $command->keyboard);
         $query = array_merge($message->toArray(), [
             'access_token' => $this->getParameter('access_token'),
             'v' => self::API_VERSION,
@@ -122,27 +154,5 @@ class VkCommunityDriver extends Driver implements WebhookVerification
         $this->guzzle->get(self::API_URL.'messages.send', [
             'query' => $query,
         ]);
-
-        return $message;
-    }
-
-    /**
-     * Whether current request type is verification.
-     *
-     * @return bool
-     */
-    public function isVerificationRequest(): bool
-    {
-        return $this->getRequest('type') === 'confirmation';
-    }
-
-    /**
-     * Run webhook verification and respond if required.
-     *
-     * @return mixed
-     */
-    public function verifyWebhook()
-    {
-        return $this->getParameter('confirmation_token');
     }
 }

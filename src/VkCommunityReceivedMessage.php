@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace FondBot\Drivers\VkCommunity;
 
-use FondBot\Contracts\Drivers\ReceivedMessage;
-use FondBot\Contracts\Drivers\Message\Location;
-use FondBot\Contracts\Drivers\Message\Attachment;
+use FondBot\Drivers\ReceivedMessage;
+use FondBot\Drivers\ReceivedMessage\Location;
+use FondBot\Drivers\ReceivedMessage\Attachment;
 
 class VkCommunityReceivedMessage implements ReceivedMessage
 {
