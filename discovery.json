@@ -1,0 +1,14 @@
+{
+  "FondBot\\Drivers\\Driver": [
+    {
+      "value": "FondBot\\Drivers\\VkCommunity\\VkCommunityDriver",
+      "metadata": {
+        "name": "vk-communities",
+        "parameters": [
+          "access_token",
+          "confirmation_token"
+        ]
+      }
+    }
+  ]
+}
