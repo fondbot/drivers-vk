@@ -31,13 +31,6 @@ class VkCommunityDriverTest extends TestCase
         ]);
     }
 
-    public function test_getConfig()
-    {
-        $expected = ['access_token', 'confirmation_token'];
-
-        $this->assertSame($expected, $this->vkCommunity->getConfig());
-    }
-
     /**
      * @expectedException \FondBot\Drivers\Exceptions\InvalidRequest
      * @expectedExceptionMessage Invalid type

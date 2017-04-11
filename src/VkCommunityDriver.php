@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace FondBot\Drivers\VkCommunity;
 
 use GuzzleHttp\Client;
+use FondBot\Drivers\Chat;
 use FondBot\Drivers\User;
 use FondBot\Drivers\Driver;
 use FondBot\Drivers\Command;
@@ -26,19 +27,6 @@ class VkCommunityDriver extends Driver implements WebhookVerification
     public function __construct(Client $guzzle)
     {
         $this->guzzle = $guzzle;
-    }
-
-    /**
-     * Configuration parameters.
-     *
-     * @return array
-     */
-    public function getConfig(): array
-    {
-        return [
-            'access_token',
-            'confirmation_token',
-        ];
     }
 
     /**
@@ -86,6 +74,19 @@ class VkCommunityDriver extends Driver implements WebhookVerification
         if (!isset($object['body'])) {
             throw new InvalidRequest('Invalid body');
         }
+    }
+
+    /**
+     * Get chat.
+     *
+     * @return Chat
+     */
+    public function getChat(): Chat
+    {
+        return new Chat(
+            (string) $this->getRequest('object')['user_id'],
+            ''
+        );
     }
 
     /**
