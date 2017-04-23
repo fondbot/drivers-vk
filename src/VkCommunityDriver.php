@@ -13,6 +13,7 @@ use FondBot\Drivers\ReceivedMessage;
 use FondBot\Drivers\Commands\SendMessage;
 use FondBot\Drivers\Exceptions\InvalidRequest;
 use FondBot\Drivers\Extensions\WebhookVerification;
+use FondBot\Drivers\VkCommunity\Commands\SendMessageAdapter;
 
 class VkCommunityDriver extends Driver implements WebhookVerification
 {
@@ -146,7 +147,7 @@ class VkCommunityDriver extends Driver implements WebhookVerification
      */
     protected function handleSendMessageCommand(SendMessage $command): void
     {
-        $message = new VkCommunityOutgoingMessage($command->recipient, $command->text, $command->keyboard);
+        $message = new SendMessageAdapter($command);
         $query = array_merge($message->toArray(), [
             'access_token' => $this->getParameter('access_token'),
             'v' => self::API_VERSION,
