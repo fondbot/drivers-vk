@@ -8,6 +8,7 @@ use Tests\TestCase;
 use GuzzleHttp\Client;
 use FondBot\Helpers\Str;
 use FondBot\Drivers\User;
+use FondBot\Http\Request;
 use GuzzleHttp\Psr7\Response;
 use FondBot\Drivers\VkCommunity\VkCommunityDriver;
 use FondBot\Drivers\VkCommunity\VkCommunityReceivedMessage;
@@ -25,10 +26,13 @@ class VkCommunityDriverTest extends TestCase
 
         $this->guzzle = $this->mock(Client::class);
         $this->vkCommunity = new VkCommunityDriver($this->guzzle);
-        $this->vkCommunity->fill($this->parameters = [
-            'access_token' => Str::random(),
-            'confirmation_token' => Str::random(),
-        ]);
+        $this->vkCommunity->fill(
+            $this->parameters = [
+                'access_token' => Str::random(),
+                'confirmation_token' => Str::random(),
+            ],
+            new Request([], [])
+        );
     }
 
     /**
@@ -37,7 +41,7 @@ class VkCommunityDriverTest extends TestCase
      */
     public function test_verifyRequest_error_type()
     {
-        $this->vkCommunity->fill($this->parameters, ['type' => 'fake']);
+        $this->vkCommunity->fill($this->parameters, new Request(['type' => 'fake'], []));
 
         $this->vkCommunity->verifyRequest();
     }
@@ -48,7 +52,7 @@ class VkCommunityDriverTest extends TestCase
      */
     public function test_verifyRequest_empty_object()
     {
-        $this->vkCommunity->fill($this->parameters, ['type' => 'message_new']);
+        $this->vkCommunity->fill($this->parameters, new Request(['type' => 'message_new'], []));
 
         $this->vkCommunity->verifyRequest();
     }
@@ -59,8 +63,10 @@ class VkCommunityDriverTest extends TestCase
      */
     public function test_verifyRequest_empty_object_user_id()
     {
-        $this->vkCommunity->fill($this->parameters,
-            ['type' => 'message_new', 'object' => ['body' => $this->faker()->word]]);
+        $this->vkCommunity->fill(
+            $this->parameters,
+            new Request(['type' => 'message_new', 'object' => ['body' => $this->faker()->word]], [])
+        );
 
         $this->vkCommunity->verifyRequest();
     }
@@ -71,21 +77,26 @@ class VkCommunityDriverTest extends TestCase
      */
     public function test_verifyRequest_empty_object_body()
     {
-        $this->vkCommunity->fill($this->parameters,
-            ['type' => 'message_new', 'object' => ['user_id' => Str::random()]]);
+        $this->vkCommunity->fill(
+            $this->parameters,
+            new Request(['type' => 'message_new', 'object' => ['user_id' => Str::random()]], [])
+        );
 
         $this->vkCommunity->verifyRequest();
     }
 
     public function test_verifyRequest()
     {
-        $this->vkCommunity->fill($this->parameters, [
-            'type' => 'message_new',
-            'object' => [
-                'user_id' => Str::random(),
-                'body' => $this->faker()->word,
-            ],
-        ]);
+        $this->vkCommunity->fill(
+            $this->parameters,
+            new Request([
+                'type' => 'message_new',
+                'object' => [
+                    'user_id' => Str::random(),
+                    'body' => $this->faker()->word,
+                ],
+            ], [])
+        );
 
         $this->vkCommunity->verifyRequest();
     }
@@ -120,11 +131,14 @@ class VkCommunityDriverTest extends TestCase
             ->once()
             ->andReturn($response);
 
-        $this->vkCommunity->fill($this->parameters, [
-            'object' => [
-                'user_id' => $userId,
-            ],
-        ]);
+        $this->vkCommunity->fill(
+            $this->parameters,
+            new Request([
+                'object' => [
+                    'user_id' => $userId,
+                ],
+            ], [])
+        );
 
         $result = $this->vkCommunity->getUser();
 
@@ -144,12 +158,15 @@ class VkCommunityDriverTest extends TestCase
 
     public function test_getMessage()
     {
-        $this->vkCommunity->fill($this->parameters, [
-            'type' => 'message_new',
-            'object' => [
-                'body' => $text = $this->faker()->word,
-            ],
-        ]);
+        $this->vkCommunity->fill(
+            $this->parameters,
+            new Request([
+                'type' => 'message_new',
+                'object' => [
+                    'body' => $text = $this->faker()->word,
+                ],
+            ], [])
+        );
 
         $message = $this->vkCommunity->getMessage();
         $this->assertInstanceOf(VkCommunityReceivedMessage::class, $message);
@@ -161,7 +178,7 @@ class VkCommunityDriverTest extends TestCase
 
     public function test_isVerificationRequest()
     {
-        $this->vkCommunity->fill($this->parameters, ['type' => 'confirmation']);
+        $this->vkCommunity->fill($this->parameters, new Request(['type' => 'confirmation'], []));
 
         $this->assertTrue($this->vkCommunity->isVerificationRequest());
     }

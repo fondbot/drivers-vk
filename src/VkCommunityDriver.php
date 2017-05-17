@@ -37,7 +37,7 @@ class VkCommunityDriver extends Driver implements WebhookVerification
      */
     public function isVerificationRequest(): bool
     {
-        return $this->getRequest('type') === 'confirmation';
+        return $this->request->getParameter('type') === 'confirmation';
     }
 
     /**
@@ -57,8 +57,8 @@ class VkCommunityDriver extends Driver implements WebhookVerification
      */
     public function verifyRequest(): void
     {
-        $type = $this->getRequest('type');
-        $object = $this->getRequest('object');
+        $type = $this->request->getParameter('type');
+        $object = $this->request->getParameter('object');
 
         if ($type === null || $type !== 'message_new') {
             throw new InvalidRequest('Invalid type');
@@ -85,7 +85,7 @@ class VkCommunityDriver extends Driver implements WebhookVerification
     public function getChat(): Chat
     {
         return new Chat(
-            (string) $this->getRequest('object')['user_id'],
+            (string) $this->request->getParameter('object.user_id'),
             ''
         );
     }
@@ -102,7 +102,7 @@ class VkCommunityDriver extends Driver implements WebhookVerification
             return $this->sender;
         }
 
-        $userId = (string) $this->getRequest('object')['user_id'];
+        $userId = (string) $this->request->getParameter('object.user_id');
         $request = $this->guzzle->get(self::API_URL.'users.get', [
             'query' => [
                 'user_ids' => $userId,
@@ -125,7 +125,7 @@ class VkCommunityDriver extends Driver implements WebhookVerification
      */
     public function getMessage(): ReceivedMessage
     {
-        return new VkCommunityReceivedMessage($this->getRequest('object'));
+        return new VkCommunityReceivedMessage($this->request->getParameter('object'));
     }
 
     /**
