@@ -8,12 +8,11 @@ use GuzzleHttp\Client;
 use FondBot\Drivers\Chat;
 use FondBot\Drivers\User;
 use FondBot\Drivers\Driver;
-use FondBot\Drivers\Command;
+use FondBot\Drivers\CommandHandler;
 use FondBot\Drivers\ReceivedMessage;
-use FondBot\Drivers\Commands\SendMessage;
+use FondBot\Drivers\TemplateCompiler;
 use FondBot\Drivers\Exceptions\InvalidRequest;
 use FondBot\Drivers\Extensions\WebhookVerification;
-use FondBot\Drivers\VkCommunity\Commands\SendMessageAdapter;
 
 class VkCommunityDriver extends Driver implements WebhookVerification
 {
@@ -28,6 +27,26 @@ class VkCommunityDriver extends Driver implements WebhookVerification
     public function __construct(Client $guzzle)
     {
         $this->guzzle = $guzzle;
+    }
+
+    /**
+     * Get template compiler instance.
+     *
+     * @return TemplateCompiler|null
+     */
+    public function getTemplateCompiler(): ?TemplateCompiler
+    {
+        return null;
+    }
+
+    /**
+     * Get command handler instance.
+     *
+     * @return CommandHandler
+     */
+    public function getCommandHandler(): CommandHandler
+    {
+        return new VkCommunityCommandHandler($this, $this->guzzle);
     }
 
     /**
@@ -126,35 +145,5 @@ class VkCommunityDriver extends Driver implements WebhookVerification
     public function getMessage(): ReceivedMessage
     {
         return new VkCommunityReceivedMessage($this->request->getParameter('object'));
-    }
-
-    /**
-     * Handle command.
-     *
-     * @param Command $command
-     */
-    public function handle(Command $command): void
-    {
-        if ($command instanceof SendMessage) {
-            $this->handleSendMessageCommand($command);
-        }
-    }
-
-    /**
-     * Send reply to participant.
-     *
-     * @param SendMessage $command
-     */
-    protected function handleSendMessageCommand(SendMessage $command): void
-    {
-        $message = new SendMessageAdapter($command);
-        $query = array_merge($message->toArray(), [
-            'access_token' => $this->getParameter('access_token'),
-            'v' => self::API_VERSION,
-        ]);
-
-        $this->guzzle->get(self::API_URL.'messages.send', [
-            'query' => $query,
-        ]);
     }
 }
