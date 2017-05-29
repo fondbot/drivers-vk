@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace FondBot\Drivers\VkCommunity;
 
-use GuzzleHttp\Client;
-use FondBot\Drivers\Driver;
 use FondBot\Drivers\CommandHandler;
 use FondBot\Drivers\Commands\SendMessage;
 use FondBot\Drivers\Commands\SendRequest;
@@ -13,20 +11,12 @@ use FondBot\Drivers\Commands\SendAttachment;
 
 class VkCommunityCommandHandler extends CommandHandler
 {
-    private $guzzle;
-
-    public function __construct(Driver $driver, Client $guzzle)
-    {
-        parent::__construct($driver);
-        $this->guzzle = $guzzle;
-    }
-
     /**
      * Handle send message command.
      *
      * @param SendMessage $command
      */
-    public function handleSendMessage(SendMessage $command): void
+    protected function handleSendMessage(SendMessage $command): void
     {
         $payload = [
             'access_token' => $this->driver->getParameter('access_token'),
@@ -35,9 +25,10 @@ class VkCommunityCommandHandler extends CommandHandler
             'message' => $command->getText(),
         ];
 
-        $this->guzzle->get(VkCommunityDriver::API_URL.'messages.send', [
-            'query' => $payload,
-        ]);
+        $this->driver->getHttp()
+            ->get(VkCommunityDriver::API_URL.'messages.send', [
+                'query' => $payload,
+            ]);
     }
 
     /**
@@ -45,7 +36,7 @@ class VkCommunityCommandHandler extends CommandHandler
      *
      * @param SendAttachment $command
      */
-    public function handleSendAttachment(SendAttachment $command): void
+    protected function handleSendAttachment(SendAttachment $command): void
     {
         // TODO: Implement handleSendAttachment() method.
     }
@@ -55,7 +46,7 @@ class VkCommunityCommandHandler extends CommandHandler
      *
      * @param SendRequest $command
      */
-    public function handleSendRequest(SendRequest $command): void
+    protected function handleSendRequest(SendRequest $command): void
     {
         // TODO: Implement handleSendRequest() method.
     }
