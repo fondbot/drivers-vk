@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace FondBot\Drivers\VkCommunity;
 
-use GuzzleHttp\Client;
 use FondBot\Drivers\Chat;
 use FondBot\Drivers\User;
 use FondBot\Drivers\Driver;
@@ -19,15 +18,8 @@ class VkCommunityDriver extends Driver implements WebhookVerification
     const API_VERSION = '5.53';
     const API_URL = 'https://api.vk.com/method/';
 
-    private $guzzle;
-
     /** @var User|null */
     private $sender;
-
-    public function __construct(Client $guzzle)
-    {
-        $this->guzzle = $guzzle;
-    }
 
     /**
      * Get template compiler instance.
@@ -46,7 +38,7 @@ class VkCommunityDriver extends Driver implements WebhookVerification
      */
     public function getCommandHandler(): CommandHandler
     {
-        return new VkCommunityCommandHandler($this, $this->guzzle);
+        return new VkCommunityCommandHandler($this, $this->http);
     }
 
     /**
@@ -122,7 +114,7 @@ class VkCommunityDriver extends Driver implements WebhookVerification
         }
 
         $userId = (string) $this->request->getParameter('object.user_id');
-        $request = $this->guzzle->get(self::API_URL.'users.get', [
+        $request = $this->http->get(self::API_URL.'users.get', [
             'query' => [
                 'user_ids' => $userId,
                 'v' => self::API_VERSION,
