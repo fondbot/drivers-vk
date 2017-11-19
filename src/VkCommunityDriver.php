@@ -4,101 +4,88 @@ declare(strict_types=1);
 
 namespace FondBot\Drivers\VkCommunity;
 
-use FondBot\Drivers\Chat;
-use FondBot\Drivers\User;
-use FondBot\Drivers\Driver;
-use FondBot\Drivers\CommandHandler;
-use FondBot\Drivers\ReceivedMessage;
-use FondBot\Drivers\TemplateCompiler;
-use FondBot\Drivers\Exceptions\InvalidRequest;
-use FondBot\Drivers\Extensions\WebhookVerification;
+use FondBot\Channels\Chat;
+use FondBot\Channels\User;
+use FondBot\Events\Unknown;
+use FondBot\Channels\Driver;
+use FondBot\Contracts\Event;
+use Illuminate\Http\Request;
+use FondBot\Contracts\Template;
+use FondBot\Templates\Attachment;
+use FondBot\Contracts\Channels\WebhookVerification;
 
 class VkCommunityDriver extends Driver implements WebhookVerification
 {
-    const API_VERSION = '5.53';
-    const API_URL = 'https://api.vk.com/method/';
+    private $client;
 
-    /** @var User|null */
-    private $sender;
-
-    /**
-     * Get template compiler instance.
-     *
-     * @return TemplateCompiler|null
-     */
-    public function getTemplateCompiler(): ?TemplateCompiler
+    /** {@inheritdoc} */
+    public function getName(): string
     {
-        return null;
+        return 'VK Communities';
     }
 
-    /**
-     * Get command handler instance.
-     *
-     * @return CommandHandler
-     */
-    public function getCommandHandler(): CommandHandler
+    /** {@inheritdoc} */
+    public function getShortName(): string
     {
-        return new VkCommunityCommandHandler($this, $this->http);
+        return 'vk-community';
     }
 
-    /**
-     * Whether current request type is verification.
-     *
-     * @return bool
-     */
-    public function isVerificationRequest(): bool
+    /** {@inheritdoc} */
+    public function getDefaultParameters(): array
     {
-        return $this->request->getParameter('type') === 'confirmation';
+        return [
+            'access_token' => '',
+            'confirmation_token' => '',
+            'secret_key' => '',
+        ];
     }
 
-    /**
-     * Run webhook verification and respond if required.
-     *
-     * @return mixed
-     */
-    public function verifyWebhook()
+    /** {@inheritdoc} */
+    public function getClient(): VkCommunityClient
     {
-        return $this->getParameter('confirmation_token');
-    }
-
-    /**
-     * Verify incoming request data.
-     *
-     * @throws InvalidRequest
-     */
-    public function verifyRequest(): void
-    {
-        $type = $this->request->getParameter('type');
-        $object = $this->request->getParameter('object');
-
-        if ($type === null || $type !== 'message_new') {
-            throw new InvalidRequest('Invalid type');
+        if ($this->client !== null) {
+            $this->client = new VkCommunityClient;
         }
 
-        if ($object === null) {
-            throw new InvalidRequest('Invalid object');
-        }
-
-        if (!isset($object['user_id'])) {
-            throw new InvalidRequest('Invalid user_id');
-        }
-
-        if (!isset($object['body'])) {
-            throw new InvalidRequest('Invalid body');
-        }
+        return $this->client;
     }
 
-    /**
-     * Get chat.
-     *
-     * @return Chat
-     */
-    public function getChat(): Chat
+    /** {@inheritdoc} */
+    public function createEvent(Request $request): Event
     {
-        return new Chat(
-            (string) $this->request->getParameter('object.user_id'),
-            ''
-        );
+        $chat = Chat::create($request->input('object.user_id'));
+
+        return new Unknown;
+    }
+
+    /** {@inheritdoc} */
+    public function sendMessage(Chat $chat, User $recipient, string $text, Template $template = null): void
+    {
+        // TODO: Implement sendMessage() method.
+    }
+
+    /** {@inheritdoc} */
+    public function sendAttachment(Chat $chat, User $recipient, Attachment $attachment): void
+    {
+        // TODO: Implement sendAttachment() method.
+    }
+
+    /** {@inheritdoc} */
+    public function sendRequest(Chat $chat, User $recipient, string $endpoint, array $parameters = []): void
+    {
+        // TODO: Implement sendRequest() method.
+    }
+
+    /** {@inheritdoc} */
+    public function isVerificationRequest(Request $request): bool
+    {
+        return $request->input('type') === 'confirmation';
+    }
+
+    /** {@inheritdoc} */
+    public function verifyWebhook(Request $request)
+    {
+        return $this->getParameters()->get('confirmation_token');
     }
 
     /**

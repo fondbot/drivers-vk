@@ -1,5 +1,5 @@
 {
-  "name": "fondbot/vk-communities",
+  "name": "fondbot/drivers-vk-communities",
   "description": "VK Communities driver for FondBot",
   "type": "library",
   "license": "MIT",
@@ -15,12 +15,12 @@
   ],
   "require": {
     "php": "^7.1",
-    "fondbot/framework": "^1.1",
+    "fondbot/framework": "^2.0",
     "guzzlehttp/guzzle": "^6.2"
   },
   "require-dev": {
     "fzaninotto/faker": "^1.6",
-    "mockery/mockery": "^0.9.9",
+    "mockery/mockery": "^1.0",
     "phpunit/phpunit": "^6.0"
   },
   "autoload": {
@@ -37,15 +37,15 @@
     "test": "vendor/bin/phpunit --stop-on-failure --no-coverage",
     "cs": "php-cs-fixer fix --allow-risky=yes"
   },
+  "extra": {
+    "branch-alias": {
+      "dev-master": "2.0-dev"
+    }
+  },
   "config": {
     "preferred-install": "dist",
     "sort-packages": true
   },
   "minimum-stability": "dev",
-  "prefer-stable": true,
-  "extra": {
-    "branch-alias": {
-      "dev-master": "1.1-dev"
-    }
-  }
+  "prefer-stable": true
 }
