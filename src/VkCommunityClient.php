@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace FondBot\Drivers\VkCommunity;
 
-use FondBot\Drivers\VkCommunity\Types\User;
 use GuzzleHttp\Client;
 use Psr\Http\Message\ResponseInterface;
+use FondBot\Drivers\VkCommunity\Types\User;
 use FondBot\Channels\Exceptions\DriverException;
 
 class VkCommunityClient
@@ -72,7 +72,7 @@ class VkCommunityClient
             })
             ->toArray();
 
-        $response = $this->guzzle->request('GET', $this->getBaseUrl() . '/' . $endpoint, ['query' => $parameters]);
+        $response = $this->guzzle->request('GET', $this->getBaseUrl().'/'.$endpoint, ['query' => $parameters]);
 
         return $this->parseResponse($response);
     }
@@ -98,14 +98,14 @@ class VkCommunityClient
             })
             ->toArray();
 
-        $response = $this->guzzle->request('POST', $this->getBaseUrl() . '/' . $endpoint, ['json' => $parameters]);
+        $response = $this->guzzle->request('POST', $this->getBaseUrl().'/'.$endpoint, ['json' => $parameters]);
 
         return $this->parseResponse($response);
     }
 
     private function parseResponse(ResponseInterface $response)
     {
-        $body = (string)$response->getBody();
+        $body = (string) $response->getBody();
         $json = json_decode($body);
 
         return $json->response;

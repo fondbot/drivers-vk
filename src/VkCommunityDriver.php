@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace FondBot\Drivers\VkCommunity;
 
+use GuzzleHttp\Client;
 use FondBot\Channels\Chat;
 use FondBot\Channels\User;
 use FondBot\Events\Unknown;
@@ -12,6 +13,7 @@ use FondBot\Contracts\Event;
 use Illuminate\Http\Request;
 use FondBot\Contracts\Template;
 use FondBot\Templates\Attachment;
+use FondBot\Events\MessageReceived;
 use FondBot\Contracts\Channels\WebhookVerification;
 
 class VkCommunityDriver extends Driver implements WebhookVerification
@@ -44,7 +46,7 @@ class VkCommunityDriver extends Driver implements WebhookVerification
     public function getClient(): VkCommunityClient
     {
         if ($this->client !== null) {
-            $this->client = new VkCommunityClient;
+            $this->client = new VkCommunityClient(new Client, $this->parameters->get('access_token'));
         }
 
         return $this->client;
@@ -53,7 +55,17 @@ class VkCommunityDriver extends Driver implements WebhookVerification
     /** {@inheritdoc} */
     public function createEvent(Request $request): Event
     {
-        $chat = Chat::create($request->input('object.user_id'));
+        $type = $request->input('type');
+
+        dd($request->input());
+
+        switch ($type) {
+            case 'message_new':
+                $chat = Chat::create($request->input('object.user_id'));
+                $from = User::create();
+
+                return new MessageReceived($chat, $from);
+        }
 
         return new Unknown;
     }

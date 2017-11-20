@@ -33,14 +33,19 @@
       "Tests\\": "tests/"
     }
   },
-  "scripts": {
-    "test": "vendor/bin/phpunit --stop-on-failure --no-coverage",
-    "cs": "php-cs-fixer fix --allow-risky=yes"
-  },
   "extra": {
     "branch-alias": {
       "dev-master": "2.0-dev"
+    },
+    "laravel": {
+      "providers": [
+        "FondBot\\Drivers\\VkCommunity\\VkCommunityServiceProvider"
+      ]
     }
+  },
+  "scripts": {
+    "test": "vendor/bin/phpunit --stop-on-failure --no-coverage",
+    "cs": "php-cs-fixer fix --allow-risky=yes"
   },
   "config": {
     "preferred-install": "dist",
