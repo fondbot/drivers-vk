@@ -11,35 +11,31 @@ class User extends Type
     private $uid;
     private $firstName;
     private $lastName;
-    private $deactivated;
-    private $hidden;
-    private $verified;
-    private $blacklisted;
-    private $sex;
-    private $bdate;
-    private $city;
-    private $country;
-    private $homeTown;
-    private $photo50;
-    private $photo100;
-    private $photo200Orig;
-    private $photo200;
-    private $photo400Orig;
-    private $photoMax;
-    private $photoMaxOrig;
-    private $online;
-    private $lists;
-    private $domain;
-    private $hasMobile;
-    private $contacts;
-    private $site;
-    private $education;
-    private $universities;
-    private $schools;
-    private $status;
-    private $lastSeen;
-    private $followersCount;
-    private $commonCount;
-    private $counters;
-    private $occupation;
+    private $nickname;
+    private $screenName;
+
+    public function getUid(): ?int
+    {
+        return $this->uid;
+    }
+
+    public function getFirstName(): ?string
+    {
+        return $this->firstName;
+    }
+
+    public function getLastName(): ?string
+    {
+        return $this->lastName;
+    }
+
+    public function getNickname(): ?string
+    {
+        return $this->nickname;
+    }
+
+    public function getScreenName(): ?string
+    {
+        return $this->screenName;
+    }
 }
