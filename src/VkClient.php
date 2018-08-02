@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace FondBot\Drivers\Vk;
 
 use GuzzleHttp\Client;
-use Psr\Http\Message\ResponseInterface;
 use FondBot\Drivers\Vk\Types\User;
+use Psr\Http\Message\ResponseInterface;
 use FondBot\Channels\Exceptions\DriverException;
 
 class VkClient
