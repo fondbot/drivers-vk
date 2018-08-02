@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace FondBot\Drivers\VkCommunity\Types;
+namespace FondBot\Drivers\Vk\Types;
 
 use FondBot\Drivers\Type;
 

@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace FondBot\Drivers\VkCommunity;
+namespace FondBot\Drivers\Vk;
 
 use FondBot\Drivers\CommandHandler;
 use FondBot\Drivers\Commands\SendMessage;
 use FondBot\Drivers\Commands\SendRequest;
 use FondBot\Drivers\Commands\SendAttachment;
 
-class VkCommunityCommandHandler extends CommandHandler
+class VkCommandHandler extends CommandHandler
 {
     /**
      * Handle send message command.
@@ -20,13 +20,13 @@ class VkCommunityCommandHandler extends CommandHandler
     {
         $payload = [
             'access_token' => $this->driver->getParameter('access_token'),
-            'v' => VkCommunityDriver::API_VERSION,
+            'v' => VkDriver::API_VERSION,
             'user_id' => $command->getRecipient()->getId(),
             'message' => $command->getText(),
         ];
 
         $this->driver->getHttp()
-            ->get(VkCommunityDriver::API_URL.'messages.send', [
+            ->get(VkDriver::API_URL.'messages.send', [
                 'query' => $payload,
             ]);
     }

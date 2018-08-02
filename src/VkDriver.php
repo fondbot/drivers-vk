@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace FondBot\Drivers\VkCommunity;
+namespace FondBot\Drivers\Vk;
 
 use GuzzleHttp\Client;
 use FondBot\Channels\Chat;
@@ -16,7 +16,7 @@ use FondBot\Templates\Attachment;
 use FondBot\Events\MessageReceived;
 use FondBot\Contracts\Channels\WebhookVerification;
 
-class VkCommunityDriver extends Driver implements WebhookVerification
+class VkDriver extends Driver implements WebhookVerification
 {
     private $client;
 
@@ -29,7 +29,7 @@ class VkCommunityDriver extends Driver implements WebhookVerification
     /** {@inheritdoc} */
     public function getShortName(): string
     {
-        return 'vk-community';
+        return 'vk';
     }
 
     /** {@inheritdoc} */
@@ -43,10 +43,10 @@ class VkCommunityDriver extends Driver implements WebhookVerification
     }
 
     /** {@inheritdoc} */
-    public function getClient(): VkCommunityClient
+    public function getClient(): VkClient
     {
         if ($this->client !== null) {
-            $this->client = new VkCommunityClient(new Client, $this->parameters->get('access_token'));
+            $this->client = new VkClient(new Client, $this->parameters->get('access_token'));
         }
 
         return $this->client;

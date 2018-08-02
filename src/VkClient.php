@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace FondBot\Drivers\VkCommunity;
+namespace FondBot\Drivers\Vk;
 
 use GuzzleHttp\Client;
 use Psr\Http\Message\ResponseInterface;
-use FondBot\Drivers\VkCommunity\Types\User;
+use FondBot\Drivers\Vk\Types\User;
 use FondBot\Channels\Exceptions\DriverException;
 
-class VkCommunityClient
+class VkClient
 {
     private const BASE_URL = 'https://api.vk.com/method';
 

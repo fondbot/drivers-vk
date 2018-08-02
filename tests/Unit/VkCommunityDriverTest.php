@@ -10,13 +10,13 @@ use FondBot\Helpers\Str;
 use FondBot\Drivers\User;
 use FondBot\Http\Request;
 use GuzzleHttp\Psr7\Response;
-use FondBot\Drivers\VkCommunity\VkCommunityDriver;
-use FondBot\Drivers\VkCommunity\VkCommunityReceivedMessage;
+use FondBot\Drivers\Vk\VkDriver;
+use FondBot\Drivers\Vk\VkCommunityReceivedMessage;
 
 /**
  * @property mixed|\Mockery\Mock|\Mockery\MockInterface guzzle
  * @property array                                      parameters
- * @property VkCommunityDriver                          vkCommunity
+ * @property VkDriver                          vkCommunity
  */
 class VkCommunityDriverTest extends TestCase
 {
@@ -25,7 +25,7 @@ class VkCommunityDriverTest extends TestCase
         parent::setUp();
 
         $this->guzzle = $this->mock(Client::class);
-        $this->vkCommunity = new VkCommunityDriver($this->guzzle);
+        $this->vkCommunity = new VkDriver($this->guzzle);
         $this->vkCommunity->fill(
             $this->parameters = [
                 'access_token' => Str::random(),
@@ -120,11 +120,11 @@ class VkCommunityDriverTest extends TestCase
 
         $this->guzzle->shouldReceive('get')
             ->with(
-                VkCommunityDriver::API_URL.'users.get',
+                VkDriver::API_URL.'users.get',
                 [
                     'query' => [
                         'user_ids' => $userId,
-                        'v' => VkCommunityDriver::API_VERSION,
+                        'v' => VkDriver::API_VERSION,
                     ],
                 ]
             )
