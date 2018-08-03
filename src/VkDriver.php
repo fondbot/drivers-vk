@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace FondBot\Drivers\Vk;
 
-use GuzzleHttp\Client;
 use FondBot\Channels\Chat;
 use FondBot\Channels\User;
+use VK\Client\VKApiClient;
 use FondBot\Events\Unknown;
 use FondBot\Channels\Driver;
 use FondBot\Contracts\Event;
@@ -18,12 +18,15 @@ use FondBot\Contracts\Channels\WebhookVerification;
 
 class VkDriver extends Driver implements WebhookVerification
 {
+    private const API_VERSION = '5.80';
+
+    /** @var VKApiClient */
     private $client;
 
     /** {@inheritdoc} */
     public function getName(): string
     {
-        return 'VK Communities';
+        return 'VK';
     }
 
     /** {@inheritdoc} */
@@ -39,14 +42,15 @@ class VkDriver extends Driver implements WebhookVerification
             'access_token' => '',
             'confirmation_token' => '',
             'secret_key' => '',
+            'group_id' => '',
         ];
     }
 
     /** {@inheritdoc} */
-    public function getClient(): VkClient
+    public function getClient(): VKApiClient
     {
-        if ($this->client !== null) {
-            $this->client = new VkClient(new Client, $this->parameters->get('access_token'));
+        if ($this->client === null) {
+            $this->client = new VKApiClient(static::API_VERSION, app()->getLocale());
         }
 
         return $this->client;
@@ -55,16 +59,19 @@ class VkDriver extends Driver implements WebhookVerification
     /** {@inheritdoc} */
     public function createEvent(Request $request): Event
     {
-        $type = $request->input('type');
+        if ($request->input('secret') !== $this->getParameters()->get('secret_key')) {
+            return new Unknown();
+        }
 
-        dd($request->input());
+        $type = $request->input('type');
 
         switch ($type) {
             case 'message_new':
-                $chat = Chat::create($request->input('object.user_id'));
-                $from = User::create();
+                $objectUserId = (string) $request->input('object.peer_id');
+                $chat = new Chat($objectUserId);
+                $from = $this->resolveUser($objectUserId);
 
-                return new MessageReceived($chat, $from);
+                return new MessageReceived($chat, $from, $request->input('object.text'));
         }
 
         return new Unknown;
@@ -73,25 +80,33 @@ class VkDriver extends Driver implements WebhookVerification
     /** {@inheritdoc} */
     public function sendMessage(Chat $chat, User $recipient, string $text, Template $template = null): void
     {
-        // TODO: Implement sendMessage() method.
+        $this->client->messages()->send($this->getParameters()->get('access_token'), [
+            'peer_id' => $recipient->getId(),
+            'message' => $text,
+        ]);
     }
 
     /** {@inheritdoc} */
     public function sendAttachment(Chat $chat, User $recipient, Attachment $attachment): void
     {
-        // TODO: Implement sendAttachment() method.
+        $this->client->messages()->send($this->getParameters()->get('access_token'), [
+            'peer_id' => $recipient->getId(),
+            'attachment' => $attachment->getPath(),
+        ]);
     }
 
     /** {@inheritdoc} */
     public function sendRequest(Chat $chat, User $recipient, string $endpoint, array $parameters = []): void
     {
-        // TODO: Implement sendRequest() method.
+        $this->getClient()->getRequest()->post($endpoint, $this->getParameters()->get('access_token'), $parameters);
     }
 
     /** {@inheritdoc} */
     public function isVerificationRequest(Request $request): bool
     {
-        return $request->input('type') === 'confirmation';
+        return
+            $request->input('type') === 'confirmation' &&
+            (string) $request->input('group_id') === (string) $this->getParameters()->get('group_id');
     }
 
     /** {@inheritdoc} */
@@ -100,41 +115,20 @@ class VkDriver extends Driver implements WebhookVerification
         return $this->getParameters()->get('confirmation_token');
     }
 
-    /**
-     * Get message sender.
-     *
-     * @return User
-     * @throws InvalidRequest
-     */
-    public function getUser(): User
+    protected function resolveUser(string $userId): User
     {
-        if ($this->sender !== null) {
-            return $this->sender;
-        }
-
-        $userId = (string) $this->request->getParameter('object.user_id');
-        $request = $this->http->get(self::API_URL.'users.get', [
-            'query' => [
-                'user_ids' => $userId,
-                'v' => self::API_VERSION,
-            ],
+        $response = $this->getClient()->users()->get($this->getParameters()->get('access_token'), [
+            'user_ids' => [$userId],
+            'fields' => ['first_name', 'last_name', 'screen_name'],
         ]);
-        $response = json_decode($request->getBody()->getContents(), true);
-        $user = $response['response'][0];
 
-        return $this->sender = new User(
-            (string) $user['id'],
-            $user['first_name'].' '.$user['last_name']
+        $data = $response[0];
+
+        return new User(
+            $userId,
+            $data['first_name'].' '.$data['last_name'],
+            $data['screen_name'],
+            $data
         );
-    }
-
-    /**
-     * Get message received from sender.
-     *
-     * @return ReceivedMessage
-     */
-    public function getMessage(): ReceivedMessage
-    {
-        return new VkCommunityReceivedMessage($this->request->getParameter('object'));
     }
 }
