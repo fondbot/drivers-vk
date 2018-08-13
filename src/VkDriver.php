@@ -28,25 +28,47 @@ class VkDriver extends Driver implements WebhookVerification
     /** @var VKApiClient */
     protected $client;
 
-    /** {@inheritdoc} */
+    /**
+     * Get gateway display name.
+     *
+     * This can be used for various system where human-friendly name is required.
+     *
+     * @return string
+     */
     public function getName(): string
     {
         return 'VK';
     }
 
-    /** {@inheritdoc} */
+    /**
+     * Get driver short name.
+     *
+     * This name is used as an alias for configuration.
+     *
+     * @return string
+     */
     public function getShortName(): string
     {
         return 'vk';
     }
 
-    /** {@inheritdoc} */
+    /**
+     * Create API client.
+     *
+     * @return mixed
+     */
     public function createClient(): VKApiClient
     {
         return new VKApiClient(static::API_VERSION, app()->getLocale());
     }
 
-    /** {@inheritdoc} */
+    /**
+     * Create event based on incoming request.
+     *
+     * @param Request $request
+     *
+     * @return Event
+     */
     public function createEvent(Request $request): Event
     {
         if ($request->input('secret') !== $this->secretKey) {
@@ -67,7 +89,26 @@ class VkDriver extends Driver implements WebhookVerification
         return new Unknown;
     }
 
-    /** {@inheritdoc} */
+    /**
+     * Send message.
+     *
+     * @param Chat $chat
+     * @param User $recipient
+     * @param string $text
+     * @param Template|null $template
+     *
+     * @throws \VK\Exceptions\Api\VKApiMessagesChatBotFeatureException
+     * @throws \VK\Exceptions\Api\VKApiMessagesChatUserNoAccessException
+     * @throws \VK\Exceptions\Api\VKApiMessagesDenySendException
+     * @throws \VK\Exceptions\Api\VKApiMessagesForwardAmountExceededException
+     * @throws \VK\Exceptions\Api\VKApiMessagesForwardException
+     * @throws \VK\Exceptions\Api\VKApiMessagesKeyboardInvalidException
+     * @throws \VK\Exceptions\Api\VKApiMessagesPrivacyException
+     * @throws \VK\Exceptions\Api\VKApiMessagesTooLongMessageException
+     * @throws \VK\Exceptions\Api\VKApiMessagesUserBlockedException
+     * @throws \VK\Exceptions\VKApiException
+     * @throws \VK\Exceptions\VKClientException
+     */
     public function sendMessage(Chat $chat, User $recipient, string $text, Template $template = null): void
     {
         $this->client->messages()->send($this->accessToken, [
@@ -76,7 +117,25 @@ class VkDriver extends Driver implements WebhookVerification
         ]);
     }
 
-    /** {@inheritdoc} */
+    /**
+     * Send attachment.
+     *
+     * @param Chat $chat
+     * @param User $recipient
+     * @param Attachment $attachment
+     *
+     * @throws \VK\Exceptions\Api\VKApiMessagesChatBotFeatureException
+     * @throws \VK\Exceptions\Api\VKApiMessagesChatUserNoAccessException
+     * @throws \VK\Exceptions\Api\VKApiMessagesDenySendException
+     * @throws \VK\Exceptions\Api\VKApiMessagesForwardAmountExceededException
+     * @throws \VK\Exceptions\Api\VKApiMessagesForwardException
+     * @throws \VK\Exceptions\Api\VKApiMessagesKeyboardInvalidException
+     * @throws \VK\Exceptions\Api\VKApiMessagesPrivacyException
+     * @throws \VK\Exceptions\Api\VKApiMessagesTooLongMessageException
+     * @throws \VK\Exceptions\Api\VKApiMessagesUserBlockedException
+     * @throws \VK\Exceptions\VKApiException
+     * @throws \VK\Exceptions\VKClientException
+     */
     public function sendAttachment(Chat $chat, User $recipient, Attachment $attachment): void
     {
         $this->client->messages()->send($this->accessToken, [
@@ -85,7 +144,13 @@ class VkDriver extends Driver implements WebhookVerification
         ]);
     }
 
-    /** {@inheritdoc} */
+    /**
+     * Determine if current request is verification.
+     *
+     * @param Request $request
+     *
+     * @return bool
+     */
     public function isVerificationRequest(Request $request): bool
     {
         return
@@ -93,7 +158,13 @@ class VkDriver extends Driver implements WebhookVerification
             (string) $request->input('group_id') === (string) $this->groupId;
     }
 
-    /** {@inheritdoc} */
+    /**
+     * Perform webhook verification.
+     *
+     * @param Request $request
+     *
+     * @return mixed
+     */
     public function verifyWebhook(Request $request)
     {
         return $this->confirmationToken;
