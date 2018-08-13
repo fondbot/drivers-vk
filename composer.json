@@ -16,7 +16,7 @@
   "require": {
     "php": "^7.1",
     "ext-json": "*",
-    "fondbot/framework": "^2.0",
+    "fondbot/framework": "^3.0",
     "guzzlehttp/guzzle": "^6.2",
     "vkcom/vk-php-sdk": "^5.80"
   },

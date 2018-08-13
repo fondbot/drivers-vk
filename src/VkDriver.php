@@ -20,8 +20,13 @@ class VkDriver extends Driver implements WebhookVerification
 {
     private const API_VERSION = '5.80';
 
+    protected $accessToken;
+    protected $confirmationToken;
+    protected $secretKey;
+    protected $groupId;
+
     /** @var VKApiClient */
-    private $client;
+    protected $client;
 
     /** {@inheritdoc} */
     public function getName(): string
@@ -36,30 +41,15 @@ class VkDriver extends Driver implements WebhookVerification
     }
 
     /** {@inheritdoc} */
-    public function getDefaultParameters(): array
+    public function createClient(): VKApiClient
     {
-        return [
-            'access_token' => '',
-            'confirmation_token' => '',
-            'secret_key' => '',
-            'group_id' => '',
-        ];
-    }
-
-    /** {@inheritdoc} */
-    public function getClient(): VKApiClient
-    {
-        if ($this->client === null) {
-            $this->client = new VKApiClient(static::API_VERSION, app()->getLocale());
-        }
-
-        return $this->client;
+        return new VKApiClient(static::API_VERSION, app()->getLocale());
     }
 
     /** {@inheritdoc} */
     public function createEvent(Request $request): Event
     {
-        if ($request->input('secret') !== $this->getParameters()->get('secret_key')) {
+        if ($request->input('secret') !== $this->secretKey) {
             return new Unknown();
         }
 
@@ -80,7 +70,7 @@ class VkDriver extends Driver implements WebhookVerification
     /** {@inheritdoc} */
     public function sendMessage(Chat $chat, User $recipient, string $text, Template $template = null): void
     {
-        $this->client->messages()->send($this->getParameters()->get('access_token'), [
+        $this->client->messages()->send($this->accessToken, [
             'peer_id' => $recipient->getId(),
             'message' => $text,
         ]);
@@ -89,16 +79,10 @@ class VkDriver extends Driver implements WebhookVerification
     /** {@inheritdoc} */
     public function sendAttachment(Chat $chat, User $recipient, Attachment $attachment): void
     {
-        $this->client->messages()->send($this->getParameters()->get('access_token'), [
+        $this->client->messages()->send($this->accessToken, [
             'peer_id' => $recipient->getId(),
             'attachment' => $attachment->getPath(),
         ]);
-    }
-
-    /** {@inheritdoc} */
-    public function sendRequest(Chat $chat, User $recipient, string $endpoint, array $parameters = []): void
-    {
-        $this->getClient()->getRequest()->post($endpoint, $this->getParameters()->get('access_token'), $parameters);
     }
 
     /** {@inheritdoc} */
@@ -106,18 +90,18 @@ class VkDriver extends Driver implements WebhookVerification
     {
         return
             $request->input('type') === 'confirmation' &&
-            (string) $request->input('group_id') === (string) $this->getParameters()->get('group_id');
+            (string) $request->input('group_id') === (string) $this->groupId;
     }
 
     /** {@inheritdoc} */
     public function verifyWebhook(Request $request)
     {
-        return $this->getParameters()->get('confirmation_token');
+        return $this->confirmationToken;
     }
 
     protected function resolveUser(string $userId): User
     {
-        $response = $this->getClient()->users()->get($this->getParameters()->get('access_token'), [
+        $response = $this->client->users()->get($this->accessToken, [
             'user_ids' => [$userId],
             'fields' => ['first_name', 'last_name', 'screen_name'],
         ]);
