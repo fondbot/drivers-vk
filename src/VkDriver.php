@@ -14,6 +14,7 @@ use Illuminate\Http\Request;
 use FondBot\Contracts\Template;
 use FondBot\Templates\Attachment;
 use FondBot\Events\MessageReceived;
+use FondBot\Drivers\TemplateCompiler;
 use FondBot\Contracts\Channels\WebhookVerification;
 
 class VkDriver extends Driver implements WebhookVerification
@@ -63,6 +64,16 @@ class VkDriver extends Driver implements WebhookVerification
     }
 
     /**
+     * Get template compiler instance.
+     *
+     * @return VkTemplateCompiler
+     */
+    public function getTemplateCompiler(): ?TemplateCompiler
+    {
+        return new VkTemplateCompiler();
+    }
+
+    /**
      * Create event based on incoming request.
      *
      * @param Request $request
@@ -86,7 +97,46 @@ class VkDriver extends Driver implements WebhookVerification
                 return new MessageReceived($chat, $from, $request->input('object.text'));
         }
 
-        return new Unknown;
+        return new Unknown();
+    }
+
+    /**
+     * Create HTTP response.
+     *
+     * @param Request $request
+     * @param Event $event
+     *
+     * @return mixed
+     */
+    public function createResponse(Request $request, Event $event)
+    {
+        return 'ok';
+    }
+
+    /**
+     * Determine if current request is verification.
+     *
+     * @param Request $request
+     *
+     * @return bool
+     */
+    public function isVerificationRequest(Request $request): bool
+    {
+        return
+            $request->input('type') === 'confirmation' &&
+            (string) $request->input('group_id') === (string) $this->groupId;
+    }
+
+    /**
+     * Perform webhook verification.
+     *
+     * @param Request $request
+     *
+     * @return mixed
+     */
+    public function verifyWebhook(Request $request)
+    {
+        return $this->confirmationToken;
     }
 
     /**
@@ -111,10 +161,12 @@ class VkDriver extends Driver implements WebhookVerification
      */
     public function sendMessage(Chat $chat, User $recipient, string $text, Template $template = null): void
     {
-        $this->client->messages()->send($this->accessToken, [
+        $parameters = [
             'peer_id' => $recipient->getId(),
             'message' => $text,
-        ]);
+        ];
+
+        $this->client->messages()->send($this->accessToken, $parameters);
     }
 
     /**
@@ -142,32 +194,6 @@ class VkDriver extends Driver implements WebhookVerification
             'peer_id' => $recipient->getId(),
             'attachment' => $attachment->getPath(),
         ]);
-    }
-
-    /**
-     * Determine if current request is verification.
-     *
-     * @param Request $request
-     *
-     * @return bool
-     */
-    public function isVerificationRequest(Request $request): bool
-    {
-        return
-            $request->input('type') === 'confirmation' &&
-            (string) $request->input('group_id') === (string) $this->groupId;
-    }
-
-    /**
-     * Perform webhook verification.
-     *
-     * @param Request $request
-     *
-     * @return mixed
-     */
-    public function verifyWebhook(Request $request)
-    {
-        return $this->confirmationToken;
     }
 
     protected function resolveUser(string $userId): User
